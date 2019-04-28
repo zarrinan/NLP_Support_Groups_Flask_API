@@ -11,13 +11,15 @@ application.config['CORS_HEADERS'] = 'Content-Type'
 @cross_origin(origin='*',headers=['Content-Type','Authorization'])
 def getText():
     res_text = request.get_json(force=True)
-    return jsonify({'received': res_text,
-                    "about":"Hey there!",
-                     "group1": "Emotional issues support group",
-                     "group2": "Mental issues support group",
-                     "group3": "Mood issues support group",
-                     "group4": "Depression issues support group",
-                     "group5": "All kind of issues support group"})
+    new_text = {'received': res_text,
+                "about":"Hey there!",
+                 "group1": "Emotional issues support group",
+                 "group2": "Mental issues support group",
+                 "group3": "Mood issues support group",
+                 "group4": "Depression issues support group",
+                 "group5": "All kind of issues support group"}
+    response = jsonify(new_text)
+    return response
 
 @application.route('/')
 def findGroups():
