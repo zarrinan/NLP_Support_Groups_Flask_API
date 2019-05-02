@@ -20,8 +20,8 @@ from flask_cors import CORS, cross_origin
 # pickled multiple regression model
 #pipe = load('pipeline.joblib')
 # pickled multiple regression model
-logreg = pickle.load(open('model.pkl','rb'))
-model_dbow = Doc2Vec.load('doc2vec_model.pkl')
+clf = pickle.load(open('clf.pkl','rb'))
+model_dbow = Doc2Vec.load('doc2vec_model_reddit.pkl')
 
 application = app = Flask(__name__)   # AWS EBS expects variable name "application"
 
@@ -41,7 +41,8 @@ def make_predict():
 
     # combine
     text = re.sub(r'http\S+|www.\S+', 'link', text_input)
-    text = list(text)
+    text = text.split(' ')
+    #text = list(text)
 
     # label sentences
     def label_sentences(corpus, label_type):
@@ -76,7 +77,7 @@ def make_predict():
     user_input = model_dbow.infer_vector(text, steps=20).reshape(1, -1)
 
     # make prediction and convert it to list so that jsonify is happy
-    output = pd.DataFrame(logreg.predict_proba(user_input), columns=logreg.classes_).T.nlargest(5, [0])[0].reset_index().values.tolist()
+    output = pd.DataFrame(clf.predict_proba(user_input), columns=clf.classes_).T.nlargest(5, [0])[0].reset_index().values.tolist()
 
     # send back the top 5 subreddits and their associated probabilities
     return jsonify(support_groups = output)
