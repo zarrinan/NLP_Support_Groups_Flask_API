@@ -18,23 +18,28 @@ from flask import Flask, abort, jsonify, request
 from flask_restful import Resource, Api
 from flask_cors import CORS, cross_origin
 
-import nltk
-from nltk import sentiment
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from paralleldots import set_api_key, get_api_key
+set_api_key("lX6doJFZXjab5mlVg2BnChPjIb8AhB3kqTajyEU3joo")
+get_api_key()
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('vader_lexicon')
+from paralleldots import taxonomy, sentiment
+# import nltk
+# from nltk import sentiment
+# from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-import PIL
-from PIL import Image, ImageDraw, ImageFont
-from IPython import display
-import matplotlib.pyplot as plt
-from wordcloud import WordCloud, STOPWORDS
-import numpy as np
-from os import path
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('vader_lexicon')
 
-stopwords = set(STOPWORDS)
+# import PIL
+# from PIL import Image, ImageDraw, ImageFont
+# from IPython import display
+# import matplotlib.pyplot as plt
+# from wordcloud import WordCloud, STOPWORDS
+# import numpy as np
+# from os import path
+
+# stopwords = set(STOPWORDS)
 
 # pickled multiple regression model
 #pipe = load('pipeline.joblib')
@@ -99,50 +104,51 @@ def make_predict():
     output = pd.DataFrame(clf.predict_proba(user_input), columns=clf.classes_).T.nlargest(5, [0])[0].reset_index().values.tolist()
 
     #get sentiment
-    sentiment = get_sentiment(text1)
+    sentiments = sentiment(text1)
+    # sentiment = get_sentiment(text1)
 
-    #get wordcloud
-    tokenized_text = text_tokenize(text1)
-    create_wordcloud(tokenized_text, 'cloud')
+    # #get wordcloud
+    # tokenized_text = text_tokenize(text1)
+    # create_wordcloud(tokenized_text, 'cloud')
 
 
-    #get image file
-    if request.args.get('type') == '1':
-        filename = 'cloud.png'
-    else:
-        pass
+    # #get image file
+    # if request.args.get('type') == '1':
+    #     filename = 'cloud.png'
+    # else:
+    #     pass
 
     # send back the top 5 subreddits and their associated probabilities
     return jsonify({'support_groups': output,
-        'sentiment': sentiment})
+        'sentiment': sentiments})
 
-def get_sentiment(text):
-    sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
-    sentiment_values = sid.polarity_scores(text)
-    return sentiment_values
+# def get_sentiment(text):
+#     sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
+#     sentiment_values = sid.polarity_scores(text)
+#     return sentiment_values
 
-def text_tokenize(text):
-    filtered_text = ''
-    sentences = nltk.sent_tokenize(text)
-    for sentence in sentences:
-        tokens = nltk.pos_tag(nltk.word_tokenize(sentence))
+# def text_tokenize(text):
+#     filtered_text = ''
+#     sentences = nltk.sent_tokenize(text)
+#     for sentence in sentences:
+#         tokens = nltk.pos_tag(nltk.word_tokenize(sentence))
 
-        for i in tokens:
-            if i[1] == "JJ":
-                filtered_text += i[0] + " "
-    return filtered_text
+#         for i in tokens:
+#             if i[1] == "JJ":
+#                 filtered_text += i[0] + " "
+#     return filtered_text
 
-def green_red_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-    sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
-    return "hsl({}, 90%, 30%)".format(int(70.0 * sid.polarity_scores(word)["compound"] + 45.0))
+# def green_red_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+#     sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
+#     return "hsl({}, 90%, 30%)".format(int(70.0 * sid.polarity_scores(word)["compound"] + 45.0))
 
-def create_wordcloud(text, name):
-    mask = np.array(PIL.Image.open("Black_Circle.jpg").resize((540,540)))
-    wc = WordCloud(background_color="#FEFCFA", mode="RGBA", max_words=400, mask=mask, stopwords=stopwords, margin=5,
-               random_state=1).generate(text)
-    wc.recolor(color_func=green_red_color_func)
-    return wc.to_file( name + ".png")
-    #display.display(display.Image(filename=(name + ".png")))
+# def create_wordcloud(text, name):
+#     mask = np.array(PIL.Image.open("Black_Circle.jpg").resize((540,540)))
+#     wc = WordCloud(background_color="#FEFCFA", mode="RGBA", max_words=400, mask=mask, stopwords=stopwords, margin=5,
+#                random_state=1).generate(text)
+#     wc.recolor(color_func=green_red_color_func)
+#     return wc.to_file( name + ".png")
+#     #display.display(display.Image(filename=(name + ".png")))
 
 
 
