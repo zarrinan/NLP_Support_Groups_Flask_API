@@ -23,27 +23,27 @@ set_api_key("lX6doJFZXjab5mlVg2BnChPjIb8AhB3kqTajyEU3joo")
 get_api_key()
 
 from paralleldots import taxonomy, sentiment
-# import nltk
-# from nltk import sentiment
-# from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk
+from nltk import sentiment
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-# nltk.download('punkt')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('vader_lexicon')
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('vader_lexicon')
 
-# import PIL
-# from PIL import Image, ImageDraw, ImageFont
-# from IPython import display
-# import matplotlib.pyplot as plt
-# from wordcloud import WordCloud, STOPWORDS
-# import numpy as np
-# from os import path
+import PIL
+from PIL import Image, ImageDraw, ImageFont
+from IPython import display
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud, STOPWORDS
+import numpy as np
+from os import path
 
-# stopwords = set(STOPWORDS)
+stopwords = set(STOPWORDS)
 
-# pickled multiple regression model
-#pipe = load('pipeline.joblib')
-# pickled multiple regression model
+pickled multiple regression model
+pipe = load('pipeline.joblib')
+pickled multiple regression model
 clf = pickle.load(open('clf.pkl','rb'))
 model_dbow = Doc2Vec.load('doc2vec_model_reddit.pkl')
 
@@ -70,11 +70,6 @@ def make_predict():
 
     # label sentences
     def label_sentences(corpus, label_type):
-        """
-        Gensim's Doc2Vec implementation requires each document/paragraph to have a label associated with it.
-        We do this by using the TaggedDocument method. The format will be "TRAIN_i" or "TEST_i" where "i" is
-        a dummy index of the post.
-        """
         labeled = []
         for i, v in enumerate(corpus):
             label = label_type + '_' + str(i)
@@ -83,14 +78,7 @@ def make_predict():
 
     # function to vectorize input data
     def get_vectors(model, corpus_size, vectors_size, vectors_type):
-        """
-        Get vectors from trained doc2vec model
-        :param doc2vec_model: Trained Doc2Vec model
-        :param corpus_size: Size of the data
-        :param vectors_size: Size of the embedding vectors
-        :param vectors_type: Training or Testing vectors
-        :return: list of vectors
-        """
+       
         vectors = np.zeros((corpus_size, vectors_size))
         for i in range(0, corpus_size):
             prefix = vectors_type + '_' + str(i)
@@ -100,55 +88,55 @@ def make_predict():
     # prep text for prediction
     user_input = model_dbow.infer_vector(text, steps=20).reshape(1, -1)
 
-    # make prediction and convert it to list so that jsonify is happy
+    # make prediction and convert it to list for jsonify
     output = pd.DataFrame(clf.predict_proba(user_input), columns=clf.classes_).T.nlargest(5, [0])[0].reset_index().values.tolist()
 
     #get sentiment
     sentiments = sentiment(text1)
-    # sentiment = get_sentiment(text1)
+    sentiment = get_sentiment(text1)
 
-    # #get wordcloud
-    # tokenized_text = text_tokenize(text1)
-    # create_wordcloud(tokenized_text, 'cloud')
+    #get wordcloud
+    tokenized_text = text_tokenize(text1)
+    create_wordcloud(tokenized_text, 'cloud')
 
 
     # #get image file
-    # if request.args.get('type') == '1':
-    #     filename = 'cloud.png'
-    # else:
-    #     pass
+    if request.args.get('type') == '1':
+        filename = 'cloud.png'
+    else:
+        pass
 
-    # send back the top 5 subreddits and their associated probabilities
+    send back the top 5 subreddits and their associated probabilities
     return jsonify({'support_groups': output,
         'sentiment': sentiments})
 
-# def get_sentiment(text):
-#     sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
-#     sentiment_values = sid.polarity_scores(text)
-#     return sentiment_values
+def get_sentiment(text):
+    sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
+    sentiment_values = sid.polarity_scores(text)
+    return sentiment_values
 
-# def text_tokenize(text):
-#     filtered_text = ''
-#     sentences = nltk.sent_tokenize(text)
-#     for sentence in sentences:
-#         tokens = nltk.pos_tag(nltk.word_tokenize(sentence))
+def text_tokenize(text):
+    filtered_text = ''
+    sentences = nltk.sent_tokenize(text)
+    for sentence in sentences:
+        tokens = nltk.pos_tag(nltk.word_tokenize(sentence))
 
-#         for i in tokens:
-#             if i[1] == "JJ":
-#                 filtered_text += i[0] + " "
-#     return filtered_text
+        for i in tokens:
+            if i[1] == "JJ":
+                filtered_text += i[0] + " "
+    return filtered_text
 
-# def green_red_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
-#     sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
-#     return "hsl({}, 90%, 30%)".format(int(70.0 * sid.polarity_scores(word)["compound"] + 45.0))
+def green_red_color_func(word, font_size, position, orientation, random_state=None, **kwargs):
+    sid = nltk.sentiment.vader.SentimentIntensityAnalyzer()
+    return "hsl({}, 90%, 30%)".format(int(70.0 * sid.polarity_scores(word)["compound"] + 45.0))
 
-# def create_wordcloud(text, name):
-#     mask = np.array(PIL.Image.open("Black_Circle.jpg").resize((540,540)))
-#     wc = WordCloud(background_color="#FEFCFA", mode="RGBA", max_words=400, mask=mask, stopwords=stopwords, margin=5,
-#                random_state=1).generate(text)
-#     wc.recolor(color_func=green_red_color_func)
-#     return wc.to_file( name + ".png")
-#     #display.display(display.Image(filename=(name + ".png")))
+def create_wordcloud(text, name):
+    mask = np.array(PIL.Image.open("Black_Circle.jpg").resize((540,540)))
+    wc = WordCloud(background_color="#FEFCFA", mode="RGBA", max_words=400, mask=mask, stopwords=stopwords, margin=5,
+               random_state=1).generate(text)
+    wc.recolor(color_func=green_red_color_func)
+    return wc.to_file( name + ".png")
+    #display.display(display.Image(filename=(name + ".png")))
 
 
 
